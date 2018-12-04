@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PS.MAD.D4AS.Entities\PS.MAD.D4AS.Entities.csproj" />
+  </ItemGroup>
+
+</Project>
