@@ -27,17 +27,23 @@ namespace PS.MAD.D4AS.API.Controllers
 
         public ActionResult Post([FromBody]Model.NewTicketRequest request)
         {
-            var newGuid = _submitNewTicket.ForUser(
-            new Entities.User()
-            {
-                Id = request.UserId
-            },
-            new Entities.Ticket()
-            {
-                Description = request.Title
-            });
+            var connectionString = this._configuration["ServiceBus:ConnectionString"];
+            var destinationQueueName = this._configuration["ServiceBus:OutputQueueName"];
+            var queueClient = new Microsoft.Azure.ServiceBus.QueueClient(connectionString, destinationQueueName);
 
-            return Ok(newGuid);
+            var message = new Microsoft.Azure.ServiceBus.Message();
+            message.Body = System.Text.Encoding.UTF8.GetBytes(Newtonsoft.Json.JsonConvert.SerializeObject(
+                new
+                {
+                    Description = request.Title
+                }));
+            message.Label = "New";
+            message.UserProperties.Add("Status", "Created");
+            message.UserProperties.Add("UserId", request.UserId);
+
+            queueClient.SendAsync(message);
+
+            return Ok();
         }
 
         [HttpPut("[action]")]
