@@ -1,5 +1,9 @@
 ﻿using PS.MAD.D4AS.UseCases.Exceptions;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace PS.MAD.D4AS.UseCases
 {
@@ -61,6 +65,61 @@ namespace PS.MAD.D4AS.UseCases
             existingTicket.AddImage(image);
             _repository.UpdatePriority(existingTicket);
             _repository.AttachImage(ticket, image);
+        }
+
+        private Entities.Image GetMonochromeCopy(Entities.Image image)
+        {
+            var monochromeImage = new Entities.Image();
+            var imageParts = image.Split(4).ToArray();
+            var monochromeParts = new ConcurrentBag<Entities.Image>();
+
+            Parallel.For(
+                0,
+                imageParts.Length,
+                (index) =>
+                {
+                    var monochromePart = imageParts[index].Monochrome();
+                    monochromeParts.Add(monochromePart);
+                });
+
+            monochromeImage = Entities.Image.Combine(monochromeParts);
+
+            return monochromeImage;
+        }
+
+        private IEnumerable<Entities.Image> GetImageVariations(Entities.Image image)
+        {
+            // create monochrome
+            // create high contrast
+            // create high brightness
+            var imageVariations = new Entities.Image[3];
+
+            var makeMonochromeTask = new Task<Entities.Image>(() =>
+            {
+                return image.Monochrome();
+            });
+
+            makeMonochromeTask.Start();
+
+            var makeHighContrastTask = Task.Run(() =>
+            {
+                imageVariations[1] = image.HighContrast();
+            });
+
+            var makeHighBrightnessTask = Task.Factory.StartNew((state) =>
+            {
+                var percentage = (int)state;
+                imageVariations[2] = image.HighBrightness(percentage);
+            },
+            50);
+
+            // makeMonochromeTask.Wait();
+            imageVariations[0] = makeMonochromeTask.Result;
+
+            Task.WaitAll(makeMonochromeTask, makeHighContrastTask, makeHighBrightnessTask);
+            Task.WaitAny(makeMonochromeTask, makeHighContrastTask, makeHighBrightnessTask);
+
+            return imageVariations;
         }
     }
 }

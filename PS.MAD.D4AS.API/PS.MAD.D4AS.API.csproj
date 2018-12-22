@@ -10,6 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PS.MAD.D4AS.ErrorHandlers\PS.MAD.D4AS.ErrorHandlers.csproj" />
     <ProjectReference Include="..\PS.MAD.D4AS.UseCases\PS.MAD.D4AS.UseCases.csproj" />
   </ItemGroup>
 

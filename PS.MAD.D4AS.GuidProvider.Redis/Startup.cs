@@ -4,34 +4,32 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
-namespace PS.MAD.D4AS.Startup
+namespace PS.MAD.D4AS.GuidProvider.Redis
 {
     public class Startup
     {
-        private readonly API.Startup _apiStartup;
-
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            this._apiStartup = new API.Startup(configuration);
         }
 
         public IConfiguration Configuration { get; }
 
+        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            this._apiStartup.ConfigureServices(services);
-
-            services.AddScoped<UseCases.Contracts.ITicketRepository, DataAccess.TicketRepository>();
-            services.AddScoped<DataAccess.Contracts.IStorage, Storage.AzureStorage>();
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -39,12 +37,11 @@ namespace PS.MAD.D4AS.Startup
             }
             else
             {
-                app.UseExceptionHandler("/Error");
+                app.UseHsts();
             }
 
-            loggerFactory.AddApplicationInsights(app.ApplicationServices, LogLevel.Information);
-
-            this._apiStartup.Configure(app, env);
+            app.UseHttpsRedirection();
+            app.UseMvc();
         }
     }
 }

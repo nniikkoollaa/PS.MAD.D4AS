@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Threading.Tasks;
 
 namespace PS.MAD.D4AS.API.Controllers
@@ -12,23 +14,26 @@ namespace PS.MAD.D4AS.API.Controllers
         private readonly UseCases.ProcessImage _imageProcessor;
         private readonly UseCases.ProcessVideo _videoProcessor;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<TicketsController> _logger;
 
         public TicketsController(
             UseCases.SubmitNewTicket submitNewTicket,
             UseCases.ProcessImage imageProcessor,
             UseCases.ProcessVideo videoProcessor,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            ILogger<TicketsController> logger)
         {
             _submitNewTicket = submitNewTicket;
             _imageProcessor = imageProcessor;
             _videoProcessor = videoProcessor;
             _configuration = configuration;
+            _logger = logger;
         }
 
         public ActionResult Post([FromBody]Model.NewTicketRequest request)
         {
-            var connectionString = this._configuration["ServiceBus:ConnectionString"];
-            var destinationQueueName = this._configuration["ServiceBus:OutputQueueName"];
+            var connectionString = _configuration["ServiceBus:ConnectionString"];
+            var destinationQueueName = _configuration["ServiceBus:OutputQueueName"];
             var queueClient = new Microsoft.Azure.ServiceBus.QueueClient(connectionString, destinationQueueName);
 
             var message = new Microsoft.Azure.ServiceBus.Message();
@@ -41,7 +46,15 @@ namespace PS.MAD.D4AS.API.Controllers
             message.UserProperties.Add("Status", "Created");
             message.UserProperties.Add("UserId", request.UserId);
 
+            var ticketId = GetNewGuid();
+            message.UserProperties.Add("TicketId", ticketId);
+
             queueClient.SendAsync(message);
+            this._logger.LogInformation("Ticket with ID: {ID} has beed created", ticketId);
+
+            var telemetryClient = new Microsoft.ApplicationInsights.TelemetryClient();
+            var requestTelemetry = new Microsoft.ApplicationInsights.DataContracts.RequestTelemetry();
+            telemetryClient.TrackRequest(requestTelemetry);
 
             return Ok();
         }
@@ -88,6 +101,11 @@ namespace PS.MAD.D4AS.API.Controllers
                 video);
 
             return Ok();
+        }
+
+        private Guid GetNewGuid()
+        {
+            return Guid.NewGuid();
         }
     }
 }

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using System;
-
+using Microsoft.Extensions.Logging;
 namespace PS.MAD.D4AS.Startup
 {
     public class Program
@@ -14,6 +14,7 @@ namespace PS.MAD.D4AS.Startup
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .UseApplicationInsights()
                 .UseStartup<Startup>()
             .UseKestrel(options =>
             {

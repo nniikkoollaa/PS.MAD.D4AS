@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Application Name="fabric:/PS.MAD.D4AS.ServiceFabric" xmlns="http://schemas.microsoft.com/2011/01/fabric" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Parameters>
+    <Parameter Name="PS.MAD.D4AS.GuidProvider.Worker_PartitionCount" Value="1" />
+    <Parameter Name="PS.MAD.D4AS.GuidProvider.Worker_MinReplicaSetSize" Value="3" />
+    <Parameter Name="PS.MAD.D4AS.GuidProvider.Worker_TargetReplicaSetSize" Value="3" />
+    <Parameter Name="PS.MAD.D4AS.GuidProvider.State_ASPNETCORE_ENVIRONMENT" Value="Development" />
+    <Parameter Name="PS.MAD.D4AS.GuidProvider.State_PartitionCount" Value="1" />
+    <Parameter Name="PS.MAD.D4AS.GuidProvider.State_MinReplicaSetSize" Value="3" />
+    <Parameter Name="PS.MAD.D4AS.GuidProvider.State_TargetReplicaSetSize" Value="3" />
+    <Parameter Name="PS.MAD.D4AS.GuidProvider.API_ASPNETCORE_ENVIRONMENT" Value="Development" />
+    <Parameter Name="PS.MAD.D4AS.GuidProvider.API_InstanceCount" Value="1" />
+  </Parameters>
+</Application>
